@@ -7,6 +7,7 @@ import (
     "os"
     "path/filepath"
     "sort"
+    "strings"
     "github.com/example/gblobs/gblobs"
 )
 
@@ -14,7 +15,7 @@ import (
 func main() {
     if len(os.Args) < 2 {
         fmt.Printf("gblobs <command> [options]\n")
-        fmt.Println("Commands: putfile, putstring, get, exists, delete, purge, stats, inspect")
+        fmt.Println("Commands: putfile, putstring, get, exists, delete, purge, stats, inspect, search")
         os.Exit(1)
     }
     cmd := os.Args[1]
@@ -35,6 +36,8 @@ func main() {
         statsCmd(os.Args[2:])
     case "inspect":
         inspectCmd(os.Args[2:])
+    case "search":
+        searchCmd(os.Args[2:])
     default:
         fmt.Println("Unknown command.")
         os.Exit(1)
@@ -125,7 +128,7 @@ func putFileCmd(args []string) {
         Owner: *owner,
         IngestionTime: gblobs.NowUTC(),
     }
-    st := createStoreOrDie(*storePath, *key)
+    st := openOrCreateStoreOrDie(*storePath, *key)
     id, err := st.PutBlob(dat, meta)
     if err != nil {
         fmt.Printf("Store error: %v\n", err)
@@ -152,7 +155,7 @@ func putStringCmd(args []string) {
         Owner: *owner,
         IngestionTime: gblobs.NowUTC(),
     }
-    st := createStoreOrDie(*storePath, *key)
+    st := openOrCreateStoreOrDie(*storePath, *key)
     id, err := st.PutBlob([]byte(str), meta)
     if err != nil {
         fmt.Printf("Store error: %v\n", err)
@@ -285,6 +288,74 @@ func inspectCmd(args []string) {
         fmt.Printf("%s [%s]\n", blob.Name, blob.BlobHash)
         fmt.Printf("  %s, %d bytes\n", blob.IngestionTime.Format("2006-01-02 15:04:05 UTC"), blob.Length)
         fmt.Printf("  URI: %s Owner: %s\n", blob.URI, blob.Owner)
+        fmt.Println()
+    }
+}
+
+func searchCmd(args []string) {
+    fs := flag.NewFlagSet("search", flag.ExitOnError)
+    storePath := fs.String("store", "./store", "Store directory")
+    key := fs.String("key", "", "Encryption key (optional)")
+    limit := fs.Int("limit", 10, "Maximum results to return")
+    offset := fs.Int("offset", 0, "Starting offset for pagination")
+    highlight := fs.Bool("highlight", true, "Show highlighted matches")
+    fs.Parse(args)
+
+    if fs.NArg() < 1 {
+        fmt.Println("Usage: gblobs search <query> [flags]")
+        fmt.Println("Flags:")
+        fmt.Println("  --store <path>      Store directory (default: ./store)")
+        fmt.Println("  --key <key>         Encryption key (optional)")
+        fmt.Println("  --limit <n>         Maximum results (default: 10)")
+        fmt.Println("  --offset <n>        Starting offset (default: 0)")
+        fmt.Println("  --highlight         Show highlighted matches (default: true)")
+        os.Exit(1)
+    }
+
+    query := fs.Arg(0)
+    st := openStoreOrDie(*storePath, *key)
+
+    // Prepare search request
+    req := gblobs.SearchRequest{
+        Query:     query,
+        Limit:     *limit,
+        Offset:    *offset,
+        Highlight: *highlight,
+    }
+
+    results, err := st.SearchWithOptions(req)
+    if err != nil {
+        fmt.Printf("Search error: %v\n", err)
+        os.Exit(1)
+    }
+
+    if len(results) == 0 {
+        fmt.Printf("No results found for query: \"%s\"\n", query)
+        return
+    }
+
+    fmt.Printf("Found %d results for \"%s\":\n\n", len(results), query)
+    for i, result := range results {
+        fmt.Printf("%d. %s (score: %.3f)\n",
+            i+1, result.Metadata.Name, result.Score)
+        fmt.Printf("   Blob ID: %s\n", result.BlobID)
+        fmt.Printf("   %s\n", result.Metadata.URI)
+        fmt.Printf("   %d bytes, %s",
+            result.Metadata.Length,
+            result.Metadata.IngestionTime.Format("2006-01-02 15:04:05"))
+
+        if result.Metadata.Owner != "" {
+            fmt.Printf(", owner: %s", result.Metadata.Owner)
+        }
+        fmt.Println()
+
+        if *highlight && len(result.Highlights) > 0 {
+            for field, fragments := range result.Highlights {
+                if len(fragments) > 0 {
+                    fmt.Printf("   %s: %s\n", field, strings.Join(fragments, " ... "))
+                }
+            }
+        }
         fmt.Println()
     }
 }

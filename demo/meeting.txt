@@ -1,0 +1,1 @@
+Meeting notes from the project review: We discussed the new search feature implementation using Bleve full-text search library.

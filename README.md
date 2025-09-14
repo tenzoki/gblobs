@@ -9,6 +9,7 @@ gblobs is a content-addressable storage system that automatically deduplicates, 
 **Key Benefits:**
 - **Space Efficient**: Identical files are stored only once, regardless of how many times you add them
 - **Fast Retrieval**: Content-addressable storage using SHA-256 hashes for instant lookups
+- **Intelligent Search**: Full-text search with automatic content indexing and relevance scoring
 - **Secure**: Optional AES-256 encryption protects your data at rest
 - **Scalable**: 3-level directory structure handles millions of objects efficiently
 - **Flexible**: Use it as a Go library in your applications or via the command-line tool
@@ -18,6 +19,7 @@ gblobs is a content-addressable storage system that automatically deduplicates, 
 - **Deduplication**: Identical data stored only once using SHA-256 hashing
 - **Compression**: All blobs compressed with gzip to minimize disk usage
 - **Optional Encryption**: AES-256 encryption with user-provided keys
+- **Full-Text Search**: Bleve-powered search across all stored content with ranking and highlighting
 - **Scalable Storage**: 3-level directory structure (`ab/cde/fgh/rest.blob`) for efficient filesystem performance
 - **Dual Interface**: Available as both Go module and CLI tool
 - **Rich Metadata**: Track filename, URI, owner, ingestion time, and more
@@ -35,7 +37,7 @@ make build
 # Run tests to verify everything works
 make test
 
-# Try the demo
+# Try the demos (includes search functionality)
 make demo
 ```
 
@@ -60,6 +62,11 @@ gblobs stats --store ./mystore
 
 # List all stored blobs with metadata
 gblobs inspect --store ./mystore
+
+# Search stored content
+gblobs search --store ./mystore "hello world"
+gblobs search --store ./mystore --limit 5 "document"
+gblobs search --store ./mystore --owner alice
 
 # Clean up
 gblobs delete $ID --store ./mystore
@@ -108,6 +115,17 @@ func main() {
     fmt.Printf("Retrieved: %s\n", string(data))
     fmt.Printf("Original name: %s\n", retrievedMeta.Name)
 
+    // Search for content
+    results, err := store.Search("Hello")
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Found %d search results\n", len(results))
+    for _, result := range results {
+        fmt.Printf("- %s (score: %.3f)\n", result.Metadata.Name, result.Score)
+    }
+
     // Get store statistics
     stats, err := store.Stats()
     if err != nil {
@@ -132,6 +150,7 @@ gblobs stats --store ./encrypted --key "my-secret-password"
 
 - **Backup Systems**: Deduplicated storage for backup data
 - **Content Management**: Store documents, images, and media files efficiently
+- **Document Search**: Full-text search across stored documents with relevance ranking
 - **Data Archival**: Long-term storage with optional encryption
 - **Build Artifacts**: Cache build outputs and dependencies
 - **File Deduplication**: Remove duplicate files across directories
@@ -141,6 +160,7 @@ gblobs stats --store ./encrypted --key "my-secret-password"
 
 - **[Usage Guide](docs/USAGE.md)** - Comprehensive usage examples, all CLI commands, and complete Go API reference
 - **[Technical Concepts](docs/concept.md)** - Architecture, design decisions, and implementation details
+- **[Bleve Search Integration Plan](docs/BLEVE_INTEGRATION_PLAN.md)** - Full-text search feature design and implementation roadmap
 
 ## Building and Development
 

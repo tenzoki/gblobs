@@ -17,6 +17,8 @@ gblobs is a Go-based object storage solution designed for both programmatic (mod
   - `purgeStore()` (clear all blobs)
   - `stats()` (report store statistics: total count, max per level, average per level)
   - `inspectStore()` (traverse and collect metadata of all blobs)
+  - `search(query)` (full-text search across stored content with relevance ranking)
+  - `searchWithOptions(request)` (advanced search with pagination and highlighting)
 - **Object Type**:
   - Blobs are described by `BlobType`:
     - `Name` (original file or logical name)
@@ -35,6 +37,13 @@ gblobs is a Go-based object storage solution designed for both programmatic (mod
   - Stores can be encrypted with a user key using AES-256
   - When provided, all blobs are encrypted before compression and decrypted after decompression
   - Both creation and opening of stores support key-based operation
+- **Full-Text Search Architecture**:
+  - Built on Bleve search library for fast, ranked full-text search
+  - Search index co-located with store at `<store>/index.bleve/`
+  - Automatic content indexing on blob storage with smart text detection
+  - Indexes text content + metadata (name, URI, owner) for comprehensive search
+  - Real-time index updates: additions and deletions immediately reflected
+  - Advanced features: relevance scoring, result highlighting, pagination
 
 ## CLI Interface
 - Implements all core operations:
@@ -46,6 +55,7 @@ gblobs is a Go-based object storage solution designed for both programmatic (mod
   - `purge`: Clear all blobs from store
   - `stats`: Display store statistics (total count, max per level, average per level)
   - `inspect`: List all blobs with metadata, sorted by name then ingestion time
+  - `search <query>`: Full-text search across stored content with ranking and highlighting
 
 ## Testing
 - Comprehensive test suite covering all functionality
