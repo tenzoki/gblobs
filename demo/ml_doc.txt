@@ -1,1 +1,0 @@
-This is a document about machine learning and artificial intelligence. It discusses neural networks, deep learning, and data science applications.
