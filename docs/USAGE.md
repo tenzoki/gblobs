@@ -69,7 +69,7 @@ gblobs putfile myimage.jpg --store ./s
 ID=$(gblobs putstring "hello" --store ./s)
 gblobs get "$ID" --store ./s --out output.txt
 gblobs stats --store ./s
-gblobs inspect --store ./s  # List all blobs with metadata, sorted by name
+gblobs inspect --store ./s  # List all blobs with metadata, sorted by name then ingestion time (newest first)
 ```
 
 ---
@@ -79,7 +79,7 @@ gblobs inspect --store ./s  # List all blobs with metadata, sorted by name
 - **Compression:** All blobs are compressed on disk (gzip).
 - **Encryption:** Specify `--key` or provide a key to enable AES-256 store encryption.
 - **Stats:** The `stats` command summarizes blob counts and directory structure.
-- **Inspect:** The `inspect` command traverses all paths and displays metadata for all blobs, sorted by name.
+- **Inspect:** The `inspect` command traverses all paths and displays metadata for all blobs, sorted by name then ingestion time (newest first).
 - **File layout:** Each blob is stored as `<store>/<2chars>/<3chars>/<3chars>/<rest>.blob` for 3-level scalability.
 - **Metadata:** Stored in a sidecar `.meta` JSON file.
 - **Blobs are immutable:** New writes of the same data result in deduplication, not overwrites.
