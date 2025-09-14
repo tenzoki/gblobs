@@ -1,0 +1,67 @@
+__pycache__/
+.claude/
+*.jar
+*.log
+*.pyc
+**/._*
+**/.DS_Store
+**/.svelte-kit/
+**/*.bak
+**/build/
+**/target/
+benchmarks.txt
+build/
+controller_demo
+core/**/*.bin
+core/**/*.exe
+core/**/*.out
+core/maccs
+coverage/
+dcpy
+demo_client
+echo_mesh_uds
+examples/
+file_ingester
+file_writer
+filedump.txt
+fridge/**/target/
+gox
+gox
+input/
+mocks/*/.env
+mocks/*/node_modules/
+mocks/consumer-java/target/
+mocks/marketplace/node_modules/
+mocks/producer-java/target/
+node_modules/
+output/
+pipeline_demo
+processor
+test_output.log
+text_transformer
+wip.txt
+
+# Gblobs project specific
+# Generated binary
+cmd/gblobs/gblobs
+
+# Store directories and demo files
+tmp_*
+*_store/
+*_store
+store/
+demo_file.txt
+demo_test.txt
+debug_*
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go.sum
+
+# Test files
+test_*
+*_test_store*

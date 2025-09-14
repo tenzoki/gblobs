@@ -1,0 +1,20 @@
+Write a technical concept for a blobstore in Go with these features:
+- can be used a module and as a CLI
+- module useage is for go directly: getBlob, putBlob, deleteBlob, existsBlob
+- store objects of type blobtype
+- use compression on store, decompress on read
+- commands on store level: openStore, createStore, purgeStore
+- 2 variants: createStore(path) and createStore(path, key) for encrypted stores
+	- same for openStore
+- id creation: use reliable hash of byte[] as blob-id to avoid duplicates
+- putBlob returns blob-id
+- file system organisation: break blob-id down into groups of to characters and create a folder structure, ie. ba7816bf8f01cfea414140de5 -> ba/781/6bf8f01cfea414140de5.blob to avoid to many file in one folder and to deep structures at same time.
+- blobtype: name (original name), uri (protocol and full path), length, blob-hash, ingestion-time, owner)
+- CLI: all go methods expect putBlob (make no sense here), additional putFile(filepath), putString(string)
+- write tests for all files and functions.
+- create test automation with automated creation of report
+- write comprensive set of demos to explain useage in demo/
+
+put the concept in docs/concept.md
+then write a development plan in docs/roster.md, restrain from any time estimations in the planing
+
